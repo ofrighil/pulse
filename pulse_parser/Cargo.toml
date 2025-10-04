@@ -1,0 +1,8 @@
+[package]
+name = "pulse_parser"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+prost = "0.14"
+pulse_protos = { path = "../pulse_protos" }
