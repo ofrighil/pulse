@@ -1,0 +1,12 @@
+[package]
+name = "pulse_nyct"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+chrono = "0.4.42"
+chrono-tz = "0.10.4"
+itertools = "0.14.0"
+phf = { version = "0.13.1", features = ["macros"] }
+pulse_parser = { path = "../pulse_parser" }
+reqwest = { version = "0.12", features = ["blocking"] }

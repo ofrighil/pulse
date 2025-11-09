@@ -1,0 +1,10 @@
+[package]
+name = "pulse_cli"
+version = "0.1.0"
+edition = "2024"
+
+[dependencies]
+openssl = { version = "0.10", features = ["vendored"] }
+pulse_nyct = { path = "../pulse_nyct" }
+pulse_parser = { path = "../pulse_parser" }
+pulse_protos = { path = "../pulse_protos" }

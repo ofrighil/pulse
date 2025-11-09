@@ -1,0 +1,7 @@
+[workspace]
+members = [
+    "pulse_cli", "pulse_nyct",
+    "pulse_parser",
+    "pulse_protos",
+]
+resolver = "3"
