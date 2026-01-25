@@ -1,3 +1,5 @@
+use std::collections::HashMap;
+
 use chrono::DateTime;
 use chrono_tz::{America::New_York, Tz};
 
@@ -28,7 +30,6 @@ impl From<char> for Direction {
 pub struct Stop {
     id: String,
     pub name: String,
-    // pub direction: Direction,
     pub arrival_time: DateTime<Tz>,
 }
 
@@ -44,12 +45,9 @@ impl From<pulse_parser::Stop> for Stop {
             None => String::from(""), // Some stop IDs are not recorded in stop.txt
         };
 
-        // let direction = stop.id.chars().nth_back(0).unwrap().into();
-
         Stop {
             id,
             name,
-            // direction,
             arrival_time,
         }
     }
@@ -106,4 +104,76 @@ pub fn query_trains(services: Services, direction: Direction) -> Vec<Train> {
         .into_iter()
         .filter(|train| train.direction == direction)
         .collect()
+}
+
+pub fn arrivals_by_id(stop_id: &str, services: Services, direction: Direction) -> Vec<DateTime<Tz>> {
+   let trains = query_trains(services, direction);
+
+    trains
+        .into_iter()
+        .map(|train| {
+            train
+                .stops
+                .into_iter()
+                .filter(|stop| stop.id == stop_id)
+                .map(|stop| stop.arrival_time)
+                .collect::<Vec<DateTime<Tz>>>()
+        })
+        .flatten()
+        .collect()
+}
+
+// pub fn arrivals_by_name(stop_name: &str, services: Services, direction: Direction) -> Vec<DateTime<Tz>> {
+//    let trains = query_trains(services, direction);
+// 
+//    println!("{:#?}", trains);
+// 
+//     trains
+//         .into_iter()
+//         .map(|train| {
+//             train
+//                 .stops
+//                 .into_iter()
+//                 .filter(|stop| stop.name == stop_name)
+//                 .map(|stop| stop.arrival_time)
+//                 .collect::<Vec<DateTime<Tz>>>()
+//         })
+//         .flatten()
+//         .collect()
+// }
+pub fn arrivals_by_name(stop_name: &str, services: Services, direction: Direction) -> HashMap<Service, Vec<DateTime<Tz>>> {
+   let trains = query_trains(services, direction);
+
+   println!("{:#?}", trains);
+
+   trains
+       .into_iter()
+       .fold(HashMap::new(), |mut arrivals, train| {
+           arrivals.entry(train.service)
+               .or_default()
+               .extend(
+                   train.stops
+                       .into_iter()
+                       .filter(|stop| stop.name == stop_name)
+                       .map(|stop| stop.arrival_time)
+                       .collect::<Vec<DateTime<Tz>>>()
+                );
+
+        arrivals
+       })
+
+
+
+    // trains
+    //     .into_iter()
+    //     .map(|train| {
+    //         train
+    //             .stops
+    //             .into_iter()
+    //             .filter(|stop| stop.name == stop_name)
+    //             .map(|stop| stop.arrival_time)
+    //             .collect::<Vec<DateTime<Tz>>>()
+    //     })
+    //     .flatten()
+    //     .collect()
 }

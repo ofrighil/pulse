@@ -135,12 +135,16 @@ impl Services {
 
 pub enum Line {
     INDEighthAvenue,
+    INDSixthAvenue,
 }
 
 impl Line {
     pub fn services(&self) -> Services {
         match self {
             Line::INDEighthAvenue => Services::from([Service::A, Service::C, Service::E]),
+            Line::INDSixthAvenue => {
+                Services::from([Service::B, Service::D, Service::F, Service::M])
+            }
         }
     }
 }
