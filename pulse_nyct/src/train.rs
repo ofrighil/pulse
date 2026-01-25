@@ -1,6 +1,6 @@
 use std::collections::HashMap;
 
-use chrono::DateTime;
+use chrono::{DateTime, TimeDelta, Utc};
 use chrono_tz::{America::New_York, Tz};
 
 use pulse_parser;
@@ -33,6 +33,8 @@ pub struct Stop {
     pub arrival_time: DateTime<Tz>,
 }
 
+pub type Arrivals = HashMap<Service, Vec<DateTime<Tz>>>;
+
 impl From<pulse_parser::Stop> for Stop {
     fn from(stop: pulse_parser::Stop) -> Stop {
         let id = stop.id[..=2].to_string();
@@ -53,6 +55,7 @@ impl From<pulse_parser::Stop> for Stop {
     }
 }
 
+#[allow(dead_code)]
 #[derive(Debug)]
 pub struct Train {
     id: String,
@@ -106,74 +109,58 @@ pub fn query_trains(services: Services, direction: Direction) -> Vec<Train> {
         .collect()
 }
 
-pub fn arrivals_by_id(stop_id: &str, services: Services, direction: Direction) -> Vec<DateTime<Tz>> {
-   let trains = query_trains(services, direction);
+pub fn arrivals_by_id(stop_id: &str, services: Services, direction: Direction) -> Arrivals {
+    let trains = query_trains(services, direction);
 
     trains
         .into_iter()
-        .map(|train| {
-            train
-                .stops
-                .into_iter()
-                .filter(|stop| stop.id == stop_id)
-                .map(|stop| stop.arrival_time)
-                .collect::<Vec<DateTime<Tz>>>()
+        .fold(HashMap::new(), |mut arrivals, train| {
+            arrivals.entry(train.service).or_default().extend(
+                train
+                    .stops
+                    .into_iter()
+                    .filter(|stop| stop.id == stop_id)
+                    .map(|stop| stop.arrival_time)
+                    .collect::<Vec<DateTime<Tz>>>(),
+            );
+
+            arrivals
         })
-        .flatten()
-        .collect()
 }
 
-// pub fn arrivals_by_name(stop_name: &str, services: Services, direction: Direction) -> Vec<DateTime<Tz>> {
-//    let trains = query_trains(services, direction);
-// 
-//    println!("{:#?}", trains);
-// 
-//     trains
-//         .into_iter()
-//         .map(|train| {
-//             train
-//                 .stops
-//                 .into_iter()
-//                 .filter(|stop| stop.name == stop_name)
-//                 .map(|stop| stop.arrival_time)
-//                 .collect::<Vec<DateTime<Tz>>>()
-//         })
-//         .flatten()
-//         .collect()
-// }
-pub fn arrivals_by_name(stop_name: &str, services: Services, direction: Direction) -> HashMap<Service, Vec<DateTime<Tz>>> {
-   let trains = query_trains(services, direction);
+pub fn arrivals_by_name(stop_name: &str, services: Services, direction: Direction) -> Arrivals {
+    let trains = query_trains(services, direction);
 
-   println!("{:#?}", trains);
+    trains
+        .into_iter()
+        .fold(HashMap::new(), |mut arrivals, train| {
+            arrivals.entry(train.service).or_default().extend(
+                train
+                    .stops
+                    .into_iter()
+                    .filter(|stop| stop.name == stop_name)
+                    .map(|stop| stop.arrival_time)
+                    .collect::<Vec<DateTime<Tz>>>(),
+            );
 
-   trains
-       .into_iter()
-       .fold(HashMap::new(), |mut arrivals, train| {
-           arrivals.entry(train.service)
-               .or_default()
-               .extend(
-                   train.stops
-                       .into_iter()
-                       .filter(|stop| stop.name == stop_name)
-                       .map(|stop| stop.arrival_time)
-                       .collect::<Vec<DateTime<Tz>>>()
-                );
+            arrivals
+        })
+}
 
-        arrivals
-       })
+pub fn filter_arrivals(arrivals: Arrivals, within_minutes: u8) -> Arrivals {
+    let now = Utc::now().with_timezone(&New_York);
+    let delta = TimeDelta::try_minutes(within_minutes as i64).unwrap();
 
-
-
-    // trains
-    //     .into_iter()
-    //     .map(|train| {
-    //         train
-    //             .stops
-    //             .into_iter()
-    //             .filter(|stop| stop.name == stop_name)
-    //             .map(|stop| stop.arrival_time)
-    //             .collect::<Vec<DateTime<Tz>>>()
-    //     })
-    //     .flatten()
-    //     .collect()
+    arrivals
+        .into_iter()
+        .map(|(service, stop_times)| {
+            (
+                service,
+                stop_times
+                    .into_iter()
+                    .filter(|stop_time| (*stop_time - now) <= delta)
+                    .collect(),
+            )
+        })
+        .collect()
 }

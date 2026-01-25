@@ -4,7 +4,7 @@ use std::error::Error;
 // use chrono_tz::{America::New_York, Tz};
 
 use pulse_nyct::service::{Service, Services};
-use pulse_nyct::train::{Direction, query_trains, arrivals_by_name};
+use pulse_nyct::train::{Direction, query_trains, arrivals_by_name, filter_arrivals};
 // use pulse_parser::Stop;
 
 
@@ -18,9 +18,10 @@ fn main() -> Result<(), Box<dyn Error>> {
     // let stop_id = "D17";
 
     // println!("{:#?}", stops);
-    let res = arrivals_by_name(stop_name, services, Direction::North);
+    let arrivals = arrivals_by_name(stop_name, services, Direction::North);
+    let arrivals = filter_arrivals(arrivals, 10) ;
 
-    println!("{:#?}", res);
+    println!("{:#?}", arrivals);
 
     Ok(())
 }
