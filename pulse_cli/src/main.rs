@@ -1,24 +1,39 @@
 use std::error::Error;
 
-// use chrono::DateTime;
-// use chrono_tz::{America::New_York, Tz};
+use clap::Parser;
 
 use pulse_nyct::service::{Service, Services};
-use pulse_nyct::train::{Direction, query_trains, arrivals_by_name, filter_arrivals};
-// use pulse_parser::Stop;
+use pulse_nyct::train::{Direction, arrivals_by_name, filter_arrivals};
 
+#[derive(Parser, Debug)]
+#[command(version, about, long_about = None)]
+struct Args {
+    /// Name of the stop
+    #[arg(long)]
+    stop_name: String,
+
+    /// List of services
+    #[arg(long)]
+    service: Vec<String>,
+
+    /// Going uptown (N) or downtown (S)
+    #[arg(long)]
+    direction: char,
+}
 
 fn main() -> Result<(), Box<dyn Error>> {
-    let services = Services::from([Service::F]);
+    let args = Args::parse();
 
-    // let trains = query_trains(services, Direction::North);
-    // let stops = &trains[4];
+    let services: Services = args
+        .service
+        .iter()
+        .map(|service| Service::from(service.as_str()))
+        .collect::<Vec<Service>>()
+        .into();
 
-    let stop_name = "34 St-Herald Sq";
-    // let stop_id = "D17";
+    let direction = Direction::from(args.direction);
 
-    // println!("{:#?}", stops);
-    let arrivals = arrivals_by_name(stop_name, services, Direction::North);
+    let arrivals = arrivals_by_name(&args.stop_name, services, direction);
     let arrivals = filter_arrivals(arrivals, 10) ;
 
     println!("{:#?}", arrivals);

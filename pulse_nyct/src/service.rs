@@ -111,6 +111,17 @@ impl<const N: usize> From<[Service; N]> for Services {
     }
 }
 
+impl From<Vec<Service>> for Services {
+    fn from(vec: Vec<Service>) -> Self {
+        let mut services = Services::new();
+        for v in vec {
+            services.insert(v);
+        }
+
+        services
+    }
+}
+
 impl Services {
     pub fn new() -> Self {
         Self(HashSet::new())

@@ -6,6 +6,7 @@ edition = "2024"
 [dependencies]
 chrono = "0.4.42"
 chrono-tz = "0.10.4"
+clap = { version = "4.5.56", features = ["derive"] }
 openssl = { version = "0.10", features = ["vendored"] }
 pulse_nyct = { path = "../pulse_nyct" }
 pulse_parser = { path = "../pulse_parser" }
