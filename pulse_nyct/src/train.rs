@@ -9,7 +9,7 @@ use pulse_parser::{Trip, parse_feed_message_bytes};
 use super::service::{Service, Services};
 use super::stops;
 
-#[derive(Debug, PartialEq)]
+#[derive(Clone, Copy, Debug, PartialEq)]
 pub enum Direction {
     North,
     South,
