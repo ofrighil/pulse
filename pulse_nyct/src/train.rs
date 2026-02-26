@@ -33,8 +33,6 @@ pub struct Stop {
     pub arrival_time: DateTime<Tz>,
 }
 
-pub type Arrivals = HashMap<Service, Vec<DateTime<Tz>>>;
-
 impl From<pulse_parser::Stop> for Stop {
     fn from(stop: pulse_parser::Stop) -> Stop {
         let id = stop.id[..=2].to_string();
@@ -109,6 +107,8 @@ pub fn query_trains(services: Services, direction: Direction) -> Vec<Train> {
         .collect()
 }
 
+pub type Arrivals = HashMap<Service, Vec<DateTime<Tz>>>;
+
 pub fn arrivals_by_id(stop_id: &str, services: Services, direction: Direction) -> Arrivals {
     let trains = query_trains(services, direction);
 
@@ -163,4 +163,30 @@ pub fn filter_arrivals(arrivals: Arrivals, within_minutes: u8) -> Arrivals {
             )
         })
         .collect()
+}
+
+pub type ArrivalsDelta = HashMap<Service, Vec<i64>>;
+
+pub fn arrivals_by_name_in_minutes(
+    stop_name: &str,
+    services: Services,
+    direction: Direction,
+) -> ArrivalsDelta {
+    let trains = query_trains(services, direction);
+    let now = Utc::now().with_timezone(&New_York);
+
+    trains
+        .into_iter()
+        .fold(HashMap::new(), |mut arrivals, train| {
+            arrivals.entry(train.service).or_default().extend(
+                train
+                    .stops
+                    .into_iter()
+                    .filter(|stop| stop.name == stop_name)
+                    .map(|stop| (stop.arrival_time - now).num_minutes())
+                    .collect::<Vec<i64>>(),
+            );
+
+            arrivals
+        })
 }
