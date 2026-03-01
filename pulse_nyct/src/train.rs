@@ -165,13 +165,13 @@ pub fn filter_arrivals(arrivals: Arrivals, within_minutes: u8) -> Arrivals {
         .collect()
 }
 
-pub type ArrivalsDelta = HashMap<Service, Vec<i64>>;
+pub type ArrivalMinutes = HashMap<Service, Vec<i64>>;
 
 pub fn arrivals_by_name_in_minutes(
     stop_name: &str,
     services: Services,
     direction: Direction,
-) -> ArrivalsDelta {
+) -> ArrivalMinutes {
     let trains = query_trains(services, direction);
     let now = Utc::now().with_timezone(&New_York);
 
@@ -189,4 +189,23 @@ pub fn arrivals_by_name_in_minutes(
 
             arrivals
         })
+}
+
+pub type ArrivalPairs = (Service, i64);
+
+pub fn arrival_pairs_by_name_in_minutes(
+    stop_name: &str,
+    services: Services,
+    direction: Direction,
+) -> Vec<ArrivalPairs> {
+    let arrivals = arrivals_by_name(stop_name, services, direction);
+    let now = Utc::now().with_timezone(&New_York);
+
+    let mut result: Vec<(Service, DateTime<Tz>)> = arrivals
+        .into_iter()
+        .flat_map(|(service, datetime)| datetime.into_iter().map(move |dt| (service, dt)))
+        .collect();
+
+    result.sort_by_key(|&(_, t)| t);
+    result.into_iter().map(|(service, dt)| (service, (dt - now).num_minutes())).collect::<Vec<ArrivalPairs>>()
 }
