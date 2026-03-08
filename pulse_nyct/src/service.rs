@@ -103,6 +103,7 @@ impl From<&str> for Service {
     }
 }
 
+#[derive(Clone)]
 pub struct Services(HashSet<Service>);
 
 impl<const N: usize> From<[Service; N]> for Services {
