@@ -81,7 +81,7 @@ impl From<Trip> for Train {
     }
 }
 
-fn request_trains(services: Services) -> Vec<Train> {
+fn request_trains(services: &Services) -> Vec<Train> {
     let mut trains = Vec::new();
 
     for url in services.urls() {
@@ -100,7 +100,7 @@ fn request_trains(services: Services) -> Vec<Train> {
     trains
 }
 
-pub fn query_trains(services: Services, direction: Direction) -> Vec<Train> {
+pub fn query_trains(services: &Services, direction: Direction) -> Vec<Train> {
     request_trains(services)
         .into_iter()
         .filter(|train| train.direction == direction)
@@ -109,7 +109,7 @@ pub fn query_trains(services: Services, direction: Direction) -> Vec<Train> {
 
 pub type Arrivals = HashMap<Service, Vec<DateTime<Tz>>>;
 
-pub fn arrivals_by_id(stop_id: &str, services: Services, direction: Direction) -> Arrivals {
+pub fn arrivals_by_id(stop_id: &str, services: &Services, direction: Direction) -> Arrivals {
     let trains = query_trains(services, direction);
 
     trains
@@ -128,7 +128,7 @@ pub fn arrivals_by_id(stop_id: &str, services: Services, direction: Direction) -
         })
 }
 
-pub fn arrivals_by_name(stop_name: &str, services: Services, direction: Direction) -> Arrivals {
+pub fn arrivals_by_name(stop_name: &str, services: &Services, direction: Direction) -> Arrivals {
     let trains = query_trains(services, direction);
 
     trains
@@ -169,7 +169,7 @@ pub type ArrivalMinutes = HashMap<Service, Vec<i64>>;
 
 pub fn arrivals_by_name_in_minutes(
     stop_name: &str,
-    services: Services,
+    services: &Services,
     direction: Direction,
 ) -> ArrivalMinutes {
     let trains = query_trains(services, direction);
@@ -195,7 +195,7 @@ pub type ArrivalPairs = (Service, i64);
 
 pub fn arrival_pairs_by_name_in_minutes(
     stop_name: &str,
-    services: Services,
+    services: &Services,
     direction: Direction,
 ) -> Vec<ArrivalPairs> {
     let arrivals = arrivals_by_name(stop_name, services, direction);

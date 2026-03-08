@@ -33,7 +33,7 @@ fn main() -> Result<(), Box<dyn Error>> {
 
     let direction = Direction::from(args.direction);
 
-    let arrivals = arrivals_by_name(&args.stop_name, services, direction);
+    let arrivals = arrivals_by_name(&args.stop_name, &services, direction);
     let arrivals = filter_arrivals(arrivals, 10) ;
 
     println!("{:#?}", arrivals);
