@@ -4,39 +4,42 @@ use itertools::Itertools;
 
 #[derive(Clone, Copy, Debug, Eq, Hash, PartialEq)]
 pub enum Service {
-    A,
-    C,
-    E,
-    SR, // H?
+    A,  // A Eighth Avenue Express
+    C,  // C Eighth Avenue Local
+    E,  // E Eighth Avenue Local
+    SR, // S Rockaway Park Shuttle, designation H
 
-    B,
-    D,
-    F,
-    M,
-    SF,
+    B,  // B Sixth Avenue Express
+    D,  // D Sixth Avenue Express
+    F,  // F Queens Boulevard Express/Sixth Avenue Local
+    FX, // <F> Queens Boulevard Express/Sixth Avenue Local
+    M,  // M Queens Boulevard/Sixth Avenue Local
+    SF, // S Franklin Avenue Shuttle, designation S
 
-    G,
+    G, // G Brooklyn-Queens Crosstown
 
-    J,
-    Z,
+    J, // J Nassau Street Local
+    Z, // Z Nassau Street Express
 
-    N,
-    Q,
-    R,
-    W,
+    N, // N Broadway Express
+    Q, // Q Broadway Express
+    R, // R Broadway Local
+    W, // W Broadway Local
 
-    L,
+    L, // L 14th Street-Canarsie Local
 
-    One,
-    Two,
-    Three,
-    Four,
-    Five,
-    Six,
-    Seven,
-    S,
+    One,    // 1 Broadway-Seventh Avenue Local
+    Two,    // 2 Seventh Avenue Express
+    Three,  // 3 Seventh Avenue Express
+    Four,   // 4 Lexington Avenue Express
+    Five,   // 5 Lexington Avenue Express
+    Six,    // 6 Lexington Avenue Local
+    SixX,   // <6> Pelham Express
+    Seven,  // 7 Flushing Local
+    SevenX, // <7> Flushing Express
+    S,      // 42nd Street Shuttle, designation 0
 
-    SIR,
+    SIR, // Staten Island Railway
 }
 
 impl Service {
@@ -45,7 +48,7 @@ impl Service {
             Service::A | Service::C | Service::E | Service::SR => {
                 "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-ace"
             }
-            Service::B | Service::D | Service::F | Service::M | Service::SF => {
+            Service::B | Service::D | Service::F | Service::FX | Service::M | Service::SF => {
                 "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-bdfm"
             }
             Service::G => "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-g",
@@ -62,7 +65,9 @@ impl Service {
             | Service::Four
             | Service::Five
             | Service::Six
+            | Service::SixX
             | Service::Seven
+            | Service::SevenX
             | Service::S => "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs",
             Service::SIR => "https://api-endpoint.mta.info/Dataservice/mtagtfsfeeds/nyct%2Fgtfs-si",
         }
@@ -79,6 +84,7 @@ impl From<&str> for Service {
             "B" => Service::B,
             "D" => Service::D,
             "F" => Service::F,
+            "FX" => Service::FX,
             "M" => Service::M,
             "FS" => Service::SF,
             "G" => Service::G,
@@ -95,7 +101,9 @@ impl From<&str> for Service {
             "4" => Service::Four,
             "5" => Service::Five,
             "6" => Service::Six,
+            "6X" => Service::SixX,
             "7" => Service::Seven,
+            "7X" => Service::SevenX,
             "GS" => Service::S,
             "SI" => Service::SIR,
             _ => panic!(""),
@@ -148,6 +156,15 @@ impl Services {
 pub enum Line {
     INDEighthAvenue,
     INDSixthAvenue,
+    INDCrosstown,
+    BMTCanarise,
+    BMTNassauStreet,
+    BMTBroadway,
+    IRTBroadwaySeventhAvenue,
+    IRTLexingtonAvenue,
+    IRTFlushing,
+    // INDSecondAvenue,
+    Shuttles,
 }
 
 impl Line {
@@ -157,6 +174,18 @@ impl Line {
             Line::INDSixthAvenue => {
                 Services::from([Service::B, Service::D, Service::F, Service::M])
             }
+            Line::INDCrosstown => Services::from([Service::G]),
+            Line::BMTCanarise => Services::from([Service::L]),
+            Line::BMTNassauStreet => Services::from([Service::J, Service::Z]),
+            Line::BMTBroadway => Services::from([Service::N, Service::Q, Service::R, Service::W]),
+            Line::IRTBroadwaySeventhAvenue => {
+                Services::from([Service::One, Service::Two, Service::Three])
+            }
+            Line::IRTLexingtonAvenue => {
+                Services::from([Service::Four, Service::Five, Service::Six])
+            }
+            Line::IRTFlushing => Services::from([Service::Four, Service::Five, Service::Six]),
+            Line::Shuttles => Services::from([Service::S]),
         }
     }
 }
